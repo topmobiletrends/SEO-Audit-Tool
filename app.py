@@ -2,20 +2,33 @@ from flask import Flask, request, render_template
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import logging
 
 app = Flask(__name__)
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == "POST":
-        website_url = request.form["website_url"]
-        try:
-            # Fetch the website content
-            response = requests.get(website_url)
-            response.raise_for_status()
+    try:
+        if request.method == "POST":
+            website_url = request.form.get("website_url")
+            if not website_url:
+                return render_template('index.html', error="Please enter a website URL.")
+
+            app.logger.debug(f"Fetching website: {website_url}")
+            try:
+                response = requests.get(website_url)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Error fetching the website: {e}")
+                return render_template('index.html', error=f"Error fetching the website: {e}")
+
             html_content = response.text
 
             # Parse the HTML content
+            app.logger.debug("Parsing HTML content")
             soup = BeautifulSoup(html_content, 'html.parser')
 
             # Check for title tag
@@ -27,6 +40,7 @@ def index():
             meta = meta_description['content'] if meta_description else "No Meta Description Found!"
 
             # Find all links on the page
+            app.logger.debug("Checking for broken links")
             links = soup.find_all('a', href=True)
             broken_links = []
 
@@ -37,7 +51,8 @@ def index():
                         link_response = requests.get(href)
                         if link_response.status_code == 404:
                             broken_links.append(href)
-                    except:
+                    except Exception as e:
+                        app.logger.error(f"Error checking link {href}: {e}")
                         broken_links.append(href)
 
             # Create a report
@@ -49,16 +64,21 @@ def index():
             }
 
             # Save the report to a CSV file
+            app.logger.debug("Saving report to CSV")
             report_df = pd.DataFrame([report_data])
             report_df.to_csv('seo_audit_report.csv', index=False)
 
             # Display the results
+            app.logger.debug("Rendering results")
             return render_template('index.html', results=report_data)
 
-        except requests.exceptions.RequestException as e:
-            return render_template('index.html', error=f"Error fetching the website: {e}")
+        # Render the form for GET requests
+        app.logger.debug("Rendering form")
+        return render_template('index.html')
 
-    return render_template('index.html')
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {e}")
+        return render_template('index.html', error="An unexpected error occurred. Please try again.")
 
 if __name__ == "__main__":
     app.run(debug=True)

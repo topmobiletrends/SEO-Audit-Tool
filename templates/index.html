@@ -80,9 +80,9 @@
         <div class="results">
             <h2>SEO Audit Results</h2>
             <p><strong>Website:</strong> {{ results.Website }}</p>
-            <p><strong>Title Tag:</strong> {{ results.Title Tag }}</p>
-            <p><strong>Meta Description:</strong> {{ results.Meta Description }}</p>
-            <p><strong>Broken Links:</strong> {{ results.Broken Links|join(", ") if results.Broken Links else "None" }}</p>
+            <p><strong>Title Tag:</strong> {{ results['Title Tag'] }}</p>
+            <p><strong>Meta Description:</strong> {{ results['Meta Description'] }}</p>
+            <p><strong>Broken Links:</strong> {{ results['Broken Links']|join(", ") if results['Broken Links'] else "None" }}</p>
         </div>
         {% endif %}
 
