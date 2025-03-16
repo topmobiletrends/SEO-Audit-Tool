@@ -63,10 +63,7 @@ def index():
                 "Broken Links": broken_links
             }
 
-            # Save the report to a CSV file
-            app.logger.debug("Saving report to CSV")
-            report_df = pd.DataFrame([report_data])
-            report_df.to_csv('seo_audit_report.csv', index=False)
+          
 
             # Display the results
             app.logger.debug("Rendering results")
