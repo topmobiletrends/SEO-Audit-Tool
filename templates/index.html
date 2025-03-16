@@ -74,6 +74,17 @@
             border-bottom: 1px solid #ddd;
             padding-bottom: 0.5rem;
         }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background: #f9f9f9;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +100,7 @@
         <div class="results">
             <h2>SEO Audit Results</h2>
 
+            <!-- Basic Info -->
             <div class="section">
                 <h3>Basic Info</h3>
                 <p><strong>Website:</strong> {{ results.Website }}</p>
@@ -96,6 +108,7 @@
                 <p><strong>Meta Description:</strong> {{ results['Meta Description'] }}</p>
             </div>
 
+            <!-- Headings -->
             <div class="section">
                 <h3>Headings</h3>
                 <p><strong>H1:</strong> {{ results['Headings']['h1']|join(", ") if results['Headings']['h1'] else "None" }}</p>
@@ -103,17 +116,35 @@
                 <p><strong>H3:</strong> {{ results['Headings']['h3']|join(", ") if results['Headings']['h3'] else "None" }}</p>
             </div>
 
+            <!-- Images -->
             <div class="section">
                 <h3>Images</h3>
-                {% for img in results['Images'] %}
-                <p><strong>Image:</strong> {{ img['src'] }}</p>
-                <p><strong>Alt Text:</strong> {{ img['alt'] }}</p>
-                {% endfor %}
+                {% if results['Images'] %}
+                    <ul>
+                        {% for img in results['Images'] %}
+                            <li>
+                                <p><strong>Image Source:</strong> {{ img['src'] }}</p>
+                                <p><strong>Alt Text:</strong> {{ img['alt'] }}</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No images found.</p>
+                {% endif %}
             </div>
 
+            <!-- Broken Links -->
             <div class="section">
                 <h3>Broken Links</h3>
-                <p>{{ results['Broken Links']|join(", ") if results['Broken Links'] else "None" }}</p>
+                {% if results['Broken Links'] %}
+                    <ul>
+                        {% for link in results['Broken Links'] %}
+                            <li>{{ link }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No broken links found.</p>
+                {% endif %}
             </div>
         </div>
         {% endif %}

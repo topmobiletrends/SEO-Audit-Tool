@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
 import logging
 
 app = Flask(__name__)
@@ -19,7 +18,8 @@ def index():
 
             app.logger.debug(f"Fetching website: {website_url}")
             try:
-                response = requests.get(website_url)
+                # Fetch the website content with a timeout
+                response = requests.get(website_url, timeout=5)
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 app.logger.error(f"Error fetching the website: {e}")
@@ -54,16 +54,17 @@ def index():
                     "alt": img.get('alt', 'No alt text')
                 })
 
-            # Find all links on the page
+            # Find all links on the page (limit to 10 links to avoid timeouts)
             app.logger.debug("Checking for broken links")
-            links = soup.find_all('a', href=True)
+            links = soup.find_all('a', href=True)[:10]
             broken_links = []
 
             for link in links:
                 href = link['href']
                 if href.startswith('http'):  # Check only external links
                     try:
-                        link_response = requests.get(href)
+                        # Check the link with a timeout
+                        link_response = requests.get(href, timeout=5)
                         if link_response.status_code == 404:
                             broken_links.append(href)
                     except Exception as e:
