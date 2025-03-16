@@ -1,69 +1,81 @@
+from flask import Flask, request, render_template_string
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-# Ask the user for the website URL
-website_url = input("Enter the website URL to audit (e.g., https://example.com): ")
+app = Flask(__name__)
 
-# Fetch the website content
-try:
-    response = requests.get(website_url)
-    response.raise_for_status()  # Check for errors
-    html_content = response.text
-except requests.exceptions.RequestException as e:
-    print(f"Error fetching the website: {e}")
-    exit()
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        website_url = request.form["website_url"]
 
-# Parse the HTML content
-soup = BeautifulSoup(html_content, 'html.parser')
-
-# Check for title tag
-title_tag = soup.find('title')
-if title_tag:
-    print(f"Title Tag: {title_tag.text}")
-else:
-    print("No Title Tag Found!")
-
-# Check for meta description
-meta_description = soup.find('meta', attrs={'name': 'description'})
-if meta_description:
-    print(f"Meta Description: {meta_description['content']}")
-else:
-    print("No Meta Description Found!")
-
-# Find all links on the page
-links = soup.find_all('a', href=True)
-broken_links = []
-
-for link in links:
-    href = link['href']
-    if href.startswith('http'):  # Check only external links
         try:
-            link_response = requests.get(href)
-            if link_response.status_code == 404:
-                broken_links.append(href)
-        except:
-            broken_links.append(href)
+            # Fetch the website content
+            response = requests.get(website_url)
+            response.raise_for_status()
+            html_content = response.text
 
-# Print broken links
-if broken_links:
-    print("\nBroken Links Found:")
-    for broken_link in broken_links:
-        print(broken_link)
-else:
-    print("\nNo Broken Links Found!")
+            # Parse the HTML content
+            soup = BeautifulSoup(html_content, 'html.parser')
 
-# Create a report
-report_data = {
-    "Website": [website_url],
-    "Title Tag": [title_tag.text if title_tag else "Missing"],
-    "Meta Description": [meta_description['content'] if meta_description else "Missing"],
-    "Broken Links": [", ".join(broken_links) if broken_links else "None"]
-}
+            # Check for title tag
+            title_tag = soup.find('title')
+            title = title_tag.text if title_tag else "No Title Tag Found!"
 
-# Convert to a DataFrame
-report_df = pd.DataFrame(report_data)
+            # Check for meta description
+            meta_description = soup.find('meta', attrs={'name': 'description'})
+            meta = meta_description['content'] if meta_description else "No Meta Description Found!"
 
-# Save the report to a CSV file
-report_df.to_csv('seo_audit_report.csv', index=False)
-print("\nSEO Audit Report saved to 'seo_audit_report.csv'!")
+            # Find all links on the page
+            links = soup.find_all('a', href=True)
+            broken_links = []
+
+            for link in links:
+                href = link['href']
+                if href.startswith('http'):  # Check only external links
+                    try:
+                        link_response = requests.get(href)
+                        if link_response.status_code == 404:
+                            broken_links.append(href)
+                    except:
+                        broken_links.append(href)
+
+            # Create a report
+            report_data = {
+                "Website": [website_url],
+                "Title Tag": [title],
+                "Meta Description": [meta],
+                "Broken Links": [", ".join(broken_links) if broken_links else "None"]
+            }
+
+            # Convert to a DataFrame
+            report_df = pd.DataFrame(report_data)
+
+            # Save the report to a CSV file
+            report_df.to_csv('seo_audit_report.csv', index=False)
+
+            # Display the results
+            return render_template_string('''
+                <h1>SEO Audit Results</h1>
+                <p><strong>Website:</strong> {{ website_url }}</p>
+                <p><strong>Title Tag:</strong> {{ title }}</p>
+                <p><strong>Meta Description:</strong> {{ meta }}</p>
+                <p><strong>Broken Links:</strong> {{ broken_links }}</p>
+                <a href="/">Back</a>
+            ''', website_url=website_url, title=title, meta=meta, broken_links=", ".join(broken_links) if broken_links else "None")
+
+        except requests.exceptions.RequestException as e:
+            return f"Error fetching the website: {e}"
+
+    return render_template_string('''
+        <h1>SEO Audit Tool</h1>
+        <form method="POST">
+            <label for="website_url">Enter Website URL:</label>
+            <input type="text" id="website_url" name="website_url" required>
+            <button type="submit">Audit</button>
+        </form>
+    ''')
+
+if __name__ == "__main__":
+    app.run(debug=True)
