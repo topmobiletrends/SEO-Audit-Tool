@@ -21,16 +21,18 @@
             padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
+            max-width: 1200px;
             width: 100%;
         }
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 1.5rem;
         }
         form {
             display: flex;
             flex-direction: column;
+            margin-bottom: 2rem;
         }
         label {
             margin-bottom: 0.5rem;
@@ -58,9 +60,7 @@
         }
         .results h2 {
             color: #333;
-        }
-        .results p {
-            margin: 0.5rem 0;
+            margin-bottom: 1rem;
         }
         .error {
             color: red;
@@ -68,11 +68,37 @@
         }
         .section {
             margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
         }
         .section h3 {
             color: #555;
             border-bottom: 1px solid #ddd;
             padding-bottom: 0.5rem;
+        }
+        .card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+        .card h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 4px;
+            height: 10px;
+            margin-bottom: 0.5rem;
+        }
+        .progress-bar .progress {
+            background: #007bff;
+            height: 100%;
+            border-radius: 4px;
         }
         ul {
             list-style-type: none;
@@ -83,6 +109,42 @@
             margin: 0.5rem 0;
             padding: 0.5rem;
             border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-preview {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+        .search-preview h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .search-preview p {
+            margin: 0.5rem 0;
+        }
+        .keywords {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+        .keywords h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .keywords ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .keywords ul li {
+            background: #007bff;
+            color: white;
+            padding: 0.5rem;
             border-radius: 4px;
         }
     </style>
@@ -100,37 +162,58 @@
         <div class="results">
             <h2>SEO Audit Results</h2>
 
-            <!-- Basic Info -->
-            <div class="section">
-                <h3>Basic Info</h3>
-                <p><strong>Website:</strong> {{ results.Website }}</p>
-                <p><strong>Title Tag:</strong> {{ results['Title Tag'] }}</p>
+            <!-- Search Preview -->
+            <div class="search-preview">
+                <h4>Search Preview</h4>
+                <p><strong>Title:</strong> {{ results['Title Tag'] }}</p>
+                <p><strong>URL:</strong> {{ results.Website }}</p>
                 <p><strong>Meta Description:</strong> {{ results['Meta Description'] }}</p>
             </div>
 
-            <!-- Headings -->
-            <div class="section">
-                <h3>Headings</h3>
-                <p><strong>H1:</strong> {{ results['Headings']['h1']|join(", ") if results['Headings']['h1'] else "None" }}</p>
-                <p><strong>H2:</strong> {{ results['Headings']['h2']|join(", ") if results['Headings']['h2'] else "None" }}</p>
-                <p><strong>H3:</strong> {{ results['Headings']['h3']|join(", ") if results['Headings']['h3'] else "None" }}</p>
+            <!-- Keywords -->
+            <div class="keywords">
+                <h4>Keywords</h4>
+                <ul>
+                    <li>SEO</li>
+                    <li>Tools</li>
+                    <li>Free</li>
+                    <li>Online</li>
+                    <li>Web</li>
+                </ul>
             </div>
 
-            <!-- Images -->
+            <!-- Basic SEO -->
             <div class="section">
-                <h3>Images</h3>
-                {% if results['Images'] %}
-                    <ul>
-                        {% for img in results['Images'] %}
-                            <li>
-                                <p><strong>Image Source:</strong> {{ img['src'] }}</p>
-                                <p><strong>Alt Text:</strong> {{ img['alt'] }}</p>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No images found.</p>
-                {% endif %}
+                <h3>Basic SEO</h3>
+                <div class="card">
+                    <h4>Title Tag</h4>
+                    <p>{{ results['Title Tag'] }}</p>
+                </div>
+                <div class="card">
+                    <h4>Meta Description</h4>
+                    <p>{{ results['Meta Description'] }}</p>
+                </div>
+                <div class="card">
+                    <h4>Headings</h4>
+                    <p><strong>H1:</strong> {{ results['Headings']['h1']|join(", ") if results['Headings']['h1'] else "None" }}</p>
+                    <p><strong>H2:</strong> {{ results['Headings']['h2']|join(", ") if results['Headings']['h2'] else "None" }}</p>
+                    <p><strong>H3:</strong> {{ results['Headings']['h3']|join(", ") if results['Headings']['h3'] else "None" }}</p>
+                </div>
+                <div class="card">
+                    <h4>Images</h4>
+                    {% if results['Images'] %}
+                        <ul>
+                            {% for img in results['Images'] %}
+                                <li>
+                                    <p><strong>Image Source:</strong> {{ img['src'] }}</p>
+                                    <p><strong>Alt Text:</strong> {{ img['alt'] }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No images found.</p>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Broken Links -->
