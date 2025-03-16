@@ -39,6 +39,21 @@ def index():
             meta_description = soup.find('meta', attrs={'name': 'description'})
             meta = meta_description['content'] if meta_description else "No Meta Description Found!"
 
+            # Check for headings
+            headings = {
+                "h1": [h1.text for h1 in soup.find_all('h1')],
+                "h2": [h2.text for h2 in soup.find_all('h2')],
+                "h3": [h3.text for h3 in soup.find_all('h3')],
+            }
+
+            # Check for image alt text
+            images = []
+            for img in soup.find_all('img'):
+                images.append({
+                    "src": img.get('src', 'No src'),
+                    "alt": img.get('alt', 'No alt text')
+                })
+
             # Find all links on the page
             app.logger.debug("Checking for broken links")
             links = soup.find_all('a', href=True)
@@ -60,10 +75,10 @@ def index():
                 "Website": website_url,
                 "Title Tag": title,
                 "Meta Description": meta,
+                "Headings": headings,
+                "Images": images,
                 "Broken Links": broken_links
             }
-
-          
 
             # Display the results
             app.logger.debug("Rendering results")
